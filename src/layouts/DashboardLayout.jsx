@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { Navbar } from '../components/Navbar';
 import { Sidebar } from '../components/Sidebar';
@@ -10,14 +10,14 @@ export function DashboardLayout({ currentUser, onLogout }) {
   const [liveAlerts, setLiveAlerts] = useState([]);
   const [activeToast, setActiveToast] = useState(null);
 
-  const handleAlertReceived = (alert) => {
+  const handleAlertReceived = useCallback((alert) => {
     setLiveAlerts((prev) => [alert, ...prev].slice(0, 50));
     setActiveToast(alert);
     // Dismiss toast after 7 seconds
     setTimeout(() => {
       setActiveToast((current) => (current && current.id === alert.id ? null : current));
     }, 7000);
-  };
+  }, []);
 
   const { isConnected } = useWebSocket(handleAlertReceived);
 
@@ -35,10 +35,10 @@ export function DashboardLayout({ currentUser, onLogout }) {
 
       {/* Real-time Alert Toast Notification */}
       {activeToast && (
-        <div className="fixed bottom-6 right-6 z-50 max-w-md w-full bg-slate-900/95 border border-rose-500/50 rounded-xl p-4 shadow-2xl shadow-rose-950/50 backdrop-blur-xl animate-bounce-subtle">
+        <div className="fixed bottom-6 right-6 z-50 max-w-md w-full bg-slate-900 border border-rose-500/50 rounded-xl p-4 shadow-2xl">
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-center gap-2 text-rose-400 font-bold text-xs uppercase tracking-wider">
-              <AlertOctagon className="w-4 h-4 animate-pulse" />
+              <AlertOctagon className="w-4 h-4" />
               <span>Live Threat Intercepted</span>
               <span className="px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-300 text-[10px]">
                 {activeToast.severity}
@@ -51,30 +51,31 @@ export function DashboardLayout({ currentUser, onLogout }) {
               <X className="w-4 h-4" />
             </button>
           </div>
-          <p className="mt-1 text-xs text-slate-200 font-semibold">{activeToast.attack_type}</p>
-          <p className="mt-0.5 text-xs text-slate-400 line-clamp-2">{activeToast.description}</p>
-          <div className="mt-3 flex items-center justify-between">
-            <span className="text-[11px] font-mono text-cyan-400">
-              Risk: {activeToast.risk_score?.toFixed(0)}/100
+          <p className="text-xs text-white font-medium mt-2">
+            {activeToast.title}
+          </p>
+          <div className="flex items-center justify-between mt-3 pt-2 border-t border-slate-800 text-[11px]">
+            <span className="text-slate-400 font-mono">
+              Risk: <strong className="text-rose-400">{Math.round(activeToast.risk_score)}/100</strong>
             </span>
             <button
               onClick={() => {
-                setActiveToast(null);
                 navigate(`/alerts/${activeToast.id}`);
+                setActiveToast(null);
               }}
-              className="flex items-center gap-1 text-xs font-semibold text-cyan-400 hover:text-cyan-300"
+              className="inline-flex items-center gap-1 text-cyan-400 hover:text-cyan-300 font-semibold"
             >
-              <span>Investigate Alert</span>
-              <ArrowRight className="w-3.5 h-3.5" />
+              Investigate <ArrowRight className="w-3 h-3" />
             </button>
           </div>
         </div>
       )}
 
-      <div className="flex flex-1">
-        <Sidebar alertCount={liveAlerts.length} />
-        <main className="flex-1 p-4 lg:p-6 overflow-y-auto max-w-[1600px] w-full mx-auto">
-          <Outlet />
+      {/* Main App Workspace */}
+      <div className="flex-1 flex overflow-hidden">
+        <Sidebar currentUser={currentUser} />
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-[#070B14]">
+          <Outlet context={{ liveAlerts }} />
         </main>
       </div>
     </div>

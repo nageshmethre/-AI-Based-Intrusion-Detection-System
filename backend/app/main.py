@@ -1,5 +1,8 @@
+import os
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from backend.app.core.config import settings
 from backend.app.database.session import Base, engine
 from backend.app.database.seed import init_db, seed_users, seed_rules, SessionLocal
@@ -91,3 +94,17 @@ async def websocket_alerts_endpoint(websocket: WebSocket):
         ws_manager.disconnect(websocket)
     except Exception:
         ws_manager.disconnect(websocket)
+
+# Serve production frontend SPA if dist/ directory exists
+_dist_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "dist"))
+if os.path.exists(_dist_dir):
+    _assets_dir = os.path.join(_dist_dir, "assets")
+    if os.path.exists(_assets_dir):
+        app.mount("/assets", StaticFiles(directory=_assets_dir), name="assets")
+
+    @app.get("/{full_path:path}")
+    async def serve_spa_frontend(full_path: str):
+        candidate = os.path.join(_dist_dir, full_path)
+        if full_path and os.path.isfile(candidate):
+            return FileResponse(candidate)
+        return FileResponse(os.path.join(_dist_dir, "index.html"))
