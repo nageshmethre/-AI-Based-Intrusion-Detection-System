@@ -22,7 +22,7 @@ export function DashboardLayout({ currentUser, onLogout }) {
   const { isConnected } = useWebSocket(handleAlertReceived);
 
   return (
-    <div className="min-h-screen bg-[#0B0F19] text-slate-100 flex flex-col">
+    <div className="h-screen w-screen overflow-hidden bg-[#0B0F19] text-slate-100 flex flex-col">
       <Navbar
         currentUser={currentUser}
         isConnected={isConnected}
@@ -71,10 +71,10 @@ export function DashboardLayout({ currentUser, onLogout }) {
         </div>
       )}
 
-      {/* Main App Workspace */}
-      <div className="flex-1 flex overflow-hidden">
+      {/* Main App Workspace: Sidebar and Main Content locked to exact screen height */}
+      <div className="flex-1 flex min-h-0 overflow-hidden">
         <Sidebar currentUser={currentUser} />
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-[#070B14]">
+        <main className="flex-1 h-full min-h-0 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-[#070B14]">
           <Outlet context={{ liveAlerts }} />
         </main>
       </div>

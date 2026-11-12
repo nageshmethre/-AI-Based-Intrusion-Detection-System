@@ -55,8 +55,8 @@ export function Navbar({ currentUser, isConnected, onSimulationComplete, onLogou
   };
 
   return (
-    <header className="sticky top-0 z-40 bg-[#070B14]/95 backdrop-blur-xl border-b border-slate-800/90 px-4 lg:px-6 py-2.5 transition-all">
-      <div className="flex items-center justify-between gap-4">
+    <header className="h-14 shrink-0 z-40 bg-[#070B14] border-b border-slate-800/90 px-4 lg:px-6 flex items-center justify-between">
+      <div className="flex items-center justify-between gap-4 w-full">
         {/* Left: Brand Identity & Academic Credits */}
         <div className="flex items-center gap-3">
           <div className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 via-blue-600 to-indigo-700 text-white shadow-lg shadow-cyan-500/25 ring-1 ring-white/20">
@@ -152,18 +152,18 @@ export function Navbar({ currentUser, isConnected, onSimulationComplete, onLogou
         </div>
       </div>
 
-      {/* Simulation Feedback Alert Bar */}
+      {/* Simulation Feedback Floating Toast */}
       {simMessage && (
-        <div className={`mt-2 flex items-center justify-between gap-2 px-3 py-2 rounded-lg text-xs border animate-fadeIn ${
+        <div className={`fixed top-16 left-1/2 -translate-x-1/2 z-50 flex items-center justify-between gap-3 px-4 py-2 rounded-xl text-xs border shadow-2xl ${
           simMessage.type === 'success' 
-            ? 'bg-emerald-950/80 border-emerald-700/80 text-emerald-300 shadow-lg shadow-emerald-950/40' 
-            : 'bg-rose-950/80 border-rose-700/80 text-rose-300 shadow-lg shadow-rose-950/40'
+            ? 'bg-emerald-950/95 border-emerald-700 text-emerald-300' 
+            : 'bg-rose-950/95 border-rose-700 text-rose-300'
         }`}>
           <div className="flex items-center gap-2">
             {simMessage.type === 'success' ? <CheckCircle2 className="w-4 h-4 text-emerald-400" /> : <AlertTriangle className="w-4 h-4 text-rose-400" />}
-            <span className="font-medium">{simMessage.text}</span>
+            <span className="font-semibold">{simMessage.text}</span>
           </div>
-          <button onClick={() => setSimMessage(null)} className="text-slate-400 hover:text-white text-xs">✕</button>
+          <button onClick={() => setSimMessage(null)} className="text-slate-400 hover:text-white text-xs ml-2">✕</button>
         </div>
       )}
     </header>

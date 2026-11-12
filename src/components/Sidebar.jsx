@@ -51,7 +51,7 @@ export function Sidebar({ alertCount = 0 }) {
 
   return (
     <aside
-      className={`shrink-0 bg-[#070B14] border-r border-slate-800/90 min-h-[calc(100vh-57px)] p-2.5 flex flex-col justify-between transition-all duration-300 ${
+      className={`shrink-0 bg-[#070B14] border-r border-slate-800/90 h-full overflow-y-auto p-2.5 flex flex-col justify-between transition-all duration-300 ${
         collapsed ? 'w-16' : 'w-64'
       }`}
     >
