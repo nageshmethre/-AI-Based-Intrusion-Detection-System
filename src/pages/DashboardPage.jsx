@@ -15,7 +15,14 @@ import {
   Radio,
   FileText,
   Zap,
-  CheckCircle2
+  CheckCircle2,
+  ShieldCheck,
+  Cpu,
+  Layers,
+  Search,
+  Filter,
+  ArrowRight,
+  Terminal
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -41,6 +48,7 @@ export function DashboardPage() {
   const [monitorStatus, setMonitorStatus] = useState(null);
   const [injecting, setInjecting] = useState(false);
   const [injectMsg, setInjectMsg] = useState(null);
+  const [autoRefresh, setAutoRefresh] = useState(true);
 
   const fetchDashboard = async () => {
     try {
@@ -59,7 +67,7 @@ export function DashboardPage() {
     try {
       const st = await api.getMonitorStatus();
       setMonitorStatus(st);
-    } catch (e) {
+    } catch {
       // ignore
     }
   };
@@ -69,16 +77,23 @@ export function DashboardPage() {
     setInjectMsg(null);
     try {
       let rawLine = '';
+      let label = 'Console';
       if (type === 'ssh_brute') {
-        rawLine = `Nov 05 10:14:02 srv-prod-01 sshd[4912]: Failed password for root from 185.220.101.5 port 54122 ssh2`;
+        rawLine = `Nov 13 00:30:12 srv-prod-01 sshd[9182]: Failed password for root from 185.220.101.5 port 49122 ssh2`;
+        label = 'SSH Brute Force';
       } else if (type === 'sql_inject') {
-        rawLine = `198.51.100.44 - - [05/Nov/2026:10:14:05 +0000] "GET /api/v1/users?id=1%27%20OR%201=1-- HTTP/1.1" 403 230 "-" "sqlmap/1.6.0"`;
+        rawLine = `198.51.100.44 - - [13/Nov/2026:00:30:15 +0000] "GET /api/v1/users?id=1%27%20OR%201=1-- HTTP/1.1" 403 230 "-" "sqlmap/1.6.0"`;
+        label = 'Web SQL Injection';
       } else if (type === 'port_scan') {
-        rawLine = `Nov 05 10:14:08 srv-prod-01 kernel: [UFW BLOCK] IN=eth0 OUT= SRC=203.0.113.19 DST=192.168.1.10 PROTO=TCP SPT=41230 DPT=3306`;
+        rawLine = `Nov 13 00:30:18 srv-prod-01 kernel: [UFW BLOCK] IN=eth0 OUT= SRC=203.0.113.19 DST=192.168.1.10 PROTO=TCP SPT=41230 DPT=3306`;
+        label = 'Port Scan Probe';
+      } else if (type === 'cic_dos') {
+        rawLine = `80,5000180,3,1,0,0,0.0,0.7999,1666726.6,2886847.4,5000180,0,5000180,2500090.0,3535670.3,5000180,0,0,0.0,0.0,0,0,0,0,0,0,64,32,0.5999,0.1999,0,0,0.0,0.0,0.0,0,1,0,0,0,0,0,0,0,0.0,0.0,0.0,29200,-1,0,20,0.0,0.0,0,0,5000180.0,0.0,5000180,5000180,DoS Hulk`;
+        label = 'CIC-IDS2017 DoS Flow';
       }
       await api.streamSingleLog(rawLine, 'realtime_test');
-      setInjectMsg(`Attack log dispatched! Intercepted & evaluated in <100ms.`);
-      setTimeout(() => setInjectMsg(null), 4000);
+      setInjectMsg(`[${label}] Intercepted & Evaluated in <75ms!`);
+      setTimeout(() => setInjectMsg(null), 4500);
       fetchDashboard();
       fetchMonitor();
     } catch (err) {
@@ -91,7 +106,13 @@ export function DashboardPage() {
   useEffect(() => {
     fetchDashboard();
     fetchMonitor();
-    const interval = setInterval(fetchMonitor, 6000);
+    const interval = setInterval(() => {
+      if (autoRefresh) {
+        fetchDashboard();
+        fetchMonitor();
+      }
+    }, 8000);
+
     const handleRefresh = () => {
       fetchDashboard();
       fetchMonitor();
@@ -101,29 +122,32 @@ export function DashboardPage() {
       clearInterval(interval);
       window.removeEventListener('soc-refresh', handleRefresh);
     };
-  }, []);
+  }, [autoRefresh]);
 
-  const severityColors = {
-    CRITICAL: 'text-rose-400 bg-rose-500/10 border-rose-500/30',
-    HIGH: 'text-amber-400 bg-amber-500/10 border-amber-500/30',
-    MEDIUM: 'text-yellow-400 bg-yellow-500/10 border-yellow-500/30',
-    LOW: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/30',
-    INFO: 'text-slate-400 bg-slate-800 border-slate-700'
+  const severityBadges = {
+    CRITICAL: 'bg-rose-500/20 text-rose-300 border-rose-500/50 shadow-sm shadow-rose-950/50',
+    HIGH: 'bg-amber-500/20 text-amber-300 border-amber-500/50 shadow-sm shadow-amber-950/50',
+    MEDIUM: 'bg-yellow-500/20 text-yellow-300 border-yellow-500/50',
+    LOW: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/50',
+    INFO: 'bg-slate-800 text-slate-400 border-slate-700'
   };
 
-  const statusColors = {
-    NEW: 'text-rose-400 bg-rose-950/60 border-rose-800',
-    INVESTIGATING: 'text-amber-400 bg-amber-950/60 border-amber-800',
-    RESOLVED: 'text-emerald-400 bg-emerald-950/60 border-emerald-800',
-    FALSE_POSITIVE: 'text-slate-400 bg-slate-900 border-slate-700'
+  const statusBadges = {
+    NEW: 'bg-rose-950/70 text-rose-300 border-rose-800/80',
+    INVESTIGATING: 'bg-amber-950/70 text-amber-300 border-amber-800/80',
+    RESOLVED: 'bg-emerald-950/70 text-emerald-300 border-emerald-800/80',
+    FALSE_POSITIVE: 'bg-slate-900 text-slate-400 border-slate-700'
   };
 
   if (loading && !data) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="flex flex-col items-center gap-3">
-          <RefreshCw className="w-8 h-8 text-cyan-400 animate-spin" />
-          <p className="text-xs text-slate-400 font-mono">Loading SOC telemetry & intelligence feed...</p>
+      <div className="flex items-center justify-center min-h-[65vh]">
+        <div className="flex flex-col items-center gap-3.5 p-8 rounded-2xl bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl">
+          <RefreshCw className="w-9 h-9 text-cyan-400 animate-spin" />
+          <div className="text-center">
+            <p className="text-sm font-bold text-white font-cyber">Initializing Mini-SOC Telemetry</p>
+            <p className="text-xs text-slate-400 font-mono mt-1">Connecting to AI Detection Engine &amp; Live WebSocket Stream...</p>
+          </div>
         </div>
       </div>
     );
@@ -131,14 +155,19 @@ export function DashboardPage() {
 
   if (error && !data) {
     return (
-      <div className="p-6 rounded-2xl bg-rose-950/20 border border-rose-800/40 text-rose-300">
-        <p className="font-semibold text-sm">Telemetry Connection Error</p>
-        <p className="text-xs mt-1 text-rose-400">{error}</p>
+      <div className="p-6 rounded-2xl bg-rose-950/30 border border-rose-800/60 text-rose-300 max-w-xl mx-auto my-12">
+        <div className="flex items-center gap-3">
+          <AlertTriangle className="w-6 h-6 text-rose-400 shrink-0" />
+          <div>
+            <p className="font-bold text-sm">Telemetry Connection Interrupted</p>
+            <p className="text-xs mt-0.5 text-rose-300/80">{error}</p>
+          </div>
+        </div>
         <button
           onClick={fetchDashboard}
-          className="mt-3 px-3 py-1.5 rounded-lg bg-rose-900 text-xs font-semibold text-rose-100 hover:bg-rose-800"
+          className="mt-4 px-4 py-2 rounded-xl bg-rose-900/80 hover:bg-rose-800 text-xs font-semibold text-rose-100 transition shadow"
         >
-          Retry Connection
+          Re-establish Connection
         </button>
       </div>
     );
@@ -154,206 +183,259 @@ export function DashboardPage() {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Top Banner / Actions */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="space-y-6 pb-8">
+      {/* Top Operations Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800/70 pb-4">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-white font-['Space_Grotesk']">
-            Security Intelligence Overview
-          </h1>
-          <p className="text-xs text-slate-400 mt-0.5">
-            Real-time multi-dimensional telemetry, anomaly distributions, and active alert feeds
+          <div className="flex items-center gap-2.5">
+            <h1 className="text-2xl font-extrabold tracking-tight text-white font-cyber">
+              Security Operations Center (SOC) Console
+            </h1>
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+              Live Defense Active
+            </span>
+          </div>
+          <p className="text-xs text-slate-400 mt-1">
+            Real-time hybrid intelligence: 8 Heuristic Rules • Isolation Forest Anomaly Detection • Random Forest / Decision Tree / Gradient Boosting Classification
           </p>
         </div>
-        <div className="flex items-center gap-2">
+
+        <div className="flex items-center gap-2.5">
+          {/* Auto Refresh Toggle */}
           <button
-            onClick={fetchDashboard}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-900 border border-slate-800 text-slate-300 hover:bg-slate-800 transition-colors"
+            onClick={() => setAutoRefresh(!autoRefresh)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition ${
+              autoRefresh 
+                ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-300' 
+                : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200'
+            }`}
+            title="Auto-refresh telemetry every 8 seconds"
           >
-            <RefreshCw className="w-3.5 h-3.5" />
+            <Clock className="w-3.5 h-3.5" />
+            <span>Auto-Refresh: {autoRefresh ? 'ON' : 'OFF'}</span>
+          </button>
+
+          <button
+            onClick={() => { fetchDashboard(); fetchMonitor(); }}
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-900/90 border border-slate-800 hover:bg-slate-800 text-slate-200 hover:text-white transition shadow"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-cyan-400' : ''}`} />
             <span>Refresh</span>
           </button>
         </div>
       </div>
 
-      {/* 24x7 Real-Time Host Defense & Live Detection Banner */}
-      <div className="cyber-card p-4 border-l-4 border-l-emerald-500 bg-slate-900/60 relative overflow-hidden">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <span className="relative flex h-3 w-3">
+      {/* 24x7 Real-Time Server Defense Command Center Banner */}
+      <div className="cyber-card p-4 lg:p-5 border-l-4 border-l-emerald-500 bg-gradient-to-r from-slate-950 via-[#0B1222] to-slate-950 relative overflow-hidden shadow-xl shadow-cyan-950/20">
+        <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-5">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2.5">
+              <span className="relative flex h-3.5 w-3.5">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+                <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-500"></span>
               </span>
-              <h2 className="text-sm font-bold text-white tracking-wide uppercase font-['Space_Grotesk'] flex items-center gap-2">
-                24x7 Real-Time Server Defense Daemon
-                <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono font-normal">
-                  RUNNING &amp; MONITORING
+              <h2 className="text-sm font-bold text-white tracking-wide uppercase font-cyber flex items-center gap-2">
+                24x7 Autonomous Host &amp; Network Intrusion Monitor
+                <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-mono font-bold border border-emerald-500/30">
+                  ARMED &amp; TAILING
                 </span>
               </h2>
             </div>
-            <p className="text-xs text-slate-400 max-w-2xl">
-              Continuously intercepting live server logs via real-time file tailing (<span className="text-slate-300 font-mono">logs/server_auth.log</span>),
-              network Syslog UDP listener (<span className="text-slate-300 font-mono">Port 1514</span>), and Windows Security/System Event logs.
+            
+            <p className="text-xs text-slate-400 max-w-3xl leading-relaxed">
+              Continuously intercepting live server events via <strong>real-time file tailing</strong> (<code className="text-cyan-300 text-[11px] bg-slate-900 px-1 py-0.5 rounded">logs/server_auth.log</code> &amp; <code className="text-cyan-300 text-[11px] bg-slate-900 px-1 py-0.5 rounded">logs/server_access.log</code>), <strong>Syslog UDP Listener</strong> (<code className="text-cyan-300 text-[11px] bg-slate-900 px-1 py-0.5 rounded">Port 1514</code>), and <strong>Windows Security/System Event logs</strong>.
             </p>
-            <div className="flex flex-wrap items-center gap-3 pt-1 text-[11px] font-mono text-slate-300">
-              <div className="flex items-center gap-1.5 bg-slate-950/60 px-2 py-1 rounded border border-slate-800">
-                <Radio className="w-3 h-3 text-emerald-400" />
-                <span>Syslog: <strong className="text-emerald-400">UDP :1514 Active</strong></span>
+
+            <div className="flex flex-wrap items-center gap-2.5 pt-1 text-[11px] font-mono text-slate-300">
+              <div className="flex items-center gap-1.5 bg-slate-900/90 px-2.5 py-1 rounded-lg border border-slate-800">
+                <Radio className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Syslog Receiver: <strong className="text-emerald-400">UDP :1514 Active</strong></span>
               </div>
-              <div className="flex items-center gap-1.5 bg-slate-950/60 px-2 py-1 rounded border border-slate-800">
-                <FileText className="w-3 h-3 text-cyan-400" />
-                <span>Tailing: <strong className="text-cyan-400">{monitorStatus?.watched_files?.length || 2} Server Logs</strong></span>
+              <div className="flex items-center gap-1.5 bg-slate-900/90 px-2.5 py-1 rounded-lg border border-slate-800">
+                <FileText className="w-3.5 h-3.5 text-cyan-400" />
+                <span>Files Watched: <strong className="text-cyan-400">{monitorStatus?.watched_files?.length || 2} Logs (0.5s poll)</strong></span>
               </div>
-              <div className="flex items-center gap-1.5 bg-slate-950/60 px-2 py-1 rounded border border-slate-800">
-                <Activity className="w-3 h-3 text-amber-400" />
-                <span>Live Intercepts: <strong className="text-amber-400">{monitorStatus?.total_live_events_processed || 0} events</strong></span>
+              <div className="flex items-center gap-1.5 bg-slate-900/90 px-2.5 py-1 rounded-lg border border-slate-800">
+                <Activity className="w-3.5 h-3.5 text-amber-400" />
+                <span>Telemetry Ingested: <strong className="text-amber-400">{monitorStatus?.total_live_events_processed || 0} events</strong></span>
               </div>
-              <div className="flex items-center gap-1.5 bg-slate-950/60 px-2 py-1 rounded border border-slate-800">
-                <ShieldAlert className="w-3 h-3 text-rose-400" />
-                <span>Threats Caught: <strong className="text-rose-400">{monitorStatus?.live_threats_caught || 0} alerts</strong></span>
+              <div className="flex items-center gap-1.5 bg-slate-900/90 px-2.5 py-1 rounded-lg border border-slate-800">
+                <ShieldAlert className="w-3.5 h-3.5 text-rose-400" />
+                <span>Threats Intercepted: <strong className="text-rose-400 font-extrabold">{monitorStatus?.live_threats_caught || 0} alerts</strong></span>
               </div>
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row lg:flex-col gap-2 shrink-0">
-            <span className="text-[10px] uppercase font-semibold tracking-wider text-slate-400">Test Real-Time Interception:</span>
-            <div className="flex items-center gap-1.5">
+          {/* Quick Threat Verification Bar */}
+          <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800/90 space-y-2 shrink-0">
+            <div className="flex items-center justify-between text-[11px]">
+              <span className="uppercase font-bold tracking-wider text-slate-400 flex items-center gap-1.5">
+                <Zap className="w-3.5 h-3.5 text-amber-400" />
+                <span>Test Live Interception</span>
+              </span>
+              <span className="text-[10px] text-slate-500 font-mono">Response: &lt;100ms</span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-1.5">
               <button
                 disabled={injecting}
                 onClick={() => handleTestRealTimeLog('ssh_brute')}
-                className="px-2.5 py-1 text-[11px] font-medium rounded bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition"
-                title="Send real SSH failed password log line"
+                className="px-2.5 py-1.5 text-[11px] font-semibold rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700/80 hover:border-cyan-500/50 transition text-left flex items-center gap-1.5"
+                title="Send real SSH failed password log entry"
               >
-                + SSH Attack
+                <Terminal className="w-3 h-3 text-cyan-400 shrink-0" />
+                <span>SSH Brute Force</span>
               </button>
+
               <button
                 disabled={injecting}
                 onClick={() => handleTestRealTimeLog('sql_inject')}
-                className="px-2.5 py-1 text-[11px] font-medium rounded bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition"
-                title="Send real SQL Injection web access log line"
+                className="px-2.5 py-1.5 text-[11px] font-semibold rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700/80 hover:border-cyan-500/50 transition text-left flex items-center gap-1.5"
+                title="Send real SQL Injection web access log entry"
               >
-                + Web SQLi
+                <Terminal className="w-3 h-3 text-amber-400 shrink-0" />
+                <span>Web SQLi Attack</span>
               </button>
+
               <button
                 disabled={injecting}
                 onClick={() => handleTestRealTimeLog('port_scan')}
-                className="px-2.5 py-1 text-[11px] font-medium rounded bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition"
-                title="Send real port scan firewall log line"
+                className="px-2.5 py-1.5 text-[11px] font-semibold rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700/80 hover:border-cyan-500/50 transition text-left flex items-center gap-1.5"
+                title="Send real UFW firewall port probe entry"
               >
-                + Port Probe
+                <Terminal className="w-3 h-3 text-blue-400 shrink-0" />
+                <span>Port Scan Probe</span>
+              </button>
+
+              <button
+                disabled={injecting}
+                onClick={() => handleTestRealTimeLog('cic_dos')}
+                className="px-2.5 py-1.5 text-[11px] font-semibold rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700/80 hover:border-cyan-500/50 transition text-left flex items-center gap-1.5"
+                title="Send real CIC-IDS2017 DoS flow vector"
+              >
+                <Terminal className="w-3 h-3 text-rose-400 shrink-0" />
+                <span>CIC-IDS2017 Flow</span>
               </button>
             </div>
+
             {injectMsg && (
-              <span className="text-[10px] text-emerald-400 font-mono animate-pulse">{injectMsg}</span>
+              <div className="text-[10px] text-emerald-400 font-mono flex items-center gap-1.5 pt-1 animate-pulse">
+                <CheckCircle2 className="w-3 h-3 text-emerald-400 shrink-0" />
+                <span>{injectMsg}</span>
+              </div>
             )}
           </div>
         </div>
       </div>
 
-      {/* KPI Cards (Section 12) */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-        <div className="cyber-card p-4">
+      {/* KPI HUD: 6 Executive Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5">
+        <div className="cyber-card p-4 relative overflow-hidden group hover:border-cyan-500/60 transition">
           <div className="flex items-center justify-between text-slate-400 mb-2">
-            <span className="text-[11px] font-semibold uppercase tracking-wider">Total Events</span>
-            <Activity className="w-4 h-4 text-cyan-400" />
+            <span className="text-[10px] font-extrabold uppercase tracking-wider font-mono">Total Events</span>
+            <Activity className="w-4 h-4 text-cyan-400 group-hover:scale-110 transition-transform" />
           </div>
           <div className="text-2xl font-bold font-mono text-white">{kpis.total_events.toLocaleString()}</div>
-          <div className="text-[10px] text-cyan-400 mt-1 flex items-center gap-1">
+          <div className="text-[10px] text-cyan-400 mt-1 flex items-center gap-1 font-medium">
             <TrendingUp className="w-3 h-3" />
-            <span>Telemetry Ingested</span>
+            <span>Ingested Stream</span>
           </div>
         </div>
 
-        <div className="cyber-card p-4">
+        <div className="cyber-card p-4 relative overflow-hidden group hover:border-amber-500/60 transition">
           <div className="flex items-center justify-between text-slate-400 mb-2">
-            <span className="text-[11px] font-semibold uppercase tracking-wider">Suspicious</span>
-            <AlertTriangle className="w-4 h-4 text-amber-400" />
+            <span className="text-[10px] font-extrabold uppercase tracking-wider font-mono">Suspicious</span>
+            <AlertTriangle className="w-4 h-4 text-amber-400 group-hover:scale-110 transition-transform" />
           </div>
           <div className="text-2xl font-bold font-mono text-amber-400">{kpis.suspicious_events.toLocaleString()}</div>
-          <div className="text-[10px] text-slate-500 mt-1">Elevated Risk &gt;= 50</div>
+          <div className="text-[10px] text-slate-400 mt-1 font-mono">Risk Score &ge; 50</div>
         </div>
 
-        <div className="cyber-card p-4">
+        <div className="cyber-card p-4 relative overflow-hidden group hover:border-rose-500/60 transition bg-gradient-to-b from-rose-950/20 to-transparent">
           <div className="flex items-center justify-between text-slate-400 mb-2">
-            <span className="text-[11px] font-semibold uppercase tracking-wider">Critical Alerts</span>
-            <ShieldAlert className="w-4 h-4 text-rose-500" />
+            <span className="text-[10px] font-extrabold uppercase tracking-wider font-mono">Critical P1</span>
+            <ShieldAlert className="w-4 h-4 text-rose-500 group-hover:scale-110 transition-transform" />
           </div>
           <div className="text-2xl font-bold font-mono text-rose-400">{kpis.critical_alerts}</div>
-          <div className="text-[10px] text-rose-400 mt-1">Immediate action req.</div>
+          <div className="text-[10px] text-rose-400/90 mt-1 font-medium">Immediate containment</div>
         </div>
 
-        <div className="cyber-card p-4">
+        <div className="cyber-card p-4 relative overflow-hidden group hover:border-orange-500/60 transition">
           <div className="flex items-center justify-between text-slate-400 mb-2">
-            <span className="text-[11px] font-semibold uppercase tracking-wider">High Alerts</span>
-            <AlertTriangle className="w-4 h-4 text-orange-400" />
+            <span className="text-[10px] font-extrabold uppercase tracking-wider font-mono">High Alerts</span>
+            <AlertTriangle className="w-4 h-4 text-orange-400 group-hover:scale-110 transition-transform" />
           </div>
           <div className="text-2xl font-bold font-mono text-orange-400">{kpis.high_alerts}</div>
-          <div className="text-[10px] text-slate-500 mt-1">Severe threat indicators</div>
+          <div className="text-[10px] text-slate-400 mt-1 font-mono">Severe indicators</div>
         </div>
 
-        <div className="cyber-card p-4">
+        <div className="cyber-card p-4 relative overflow-hidden group hover:border-red-500/60 transition">
           <div className="flex items-center justify-between text-slate-400 mb-2">
-            <span className="text-[11px] font-semibold uppercase tracking-wider">Active Incidents</span>
-            <Flame className="w-4 h-4 text-red-500" />
+            <span className="text-[10px] font-extrabold uppercase tracking-wider font-mono">Incidents</span>
+            <Flame className="w-4 h-4 text-red-500 group-hover:scale-110 transition-transform" />
           </div>
           <div className="text-2xl font-bold font-mono text-red-400">{kpis.active_incidents}</div>
-          <div className="text-[10px] text-slate-500 mt-1">Grouped campaigns</div>
+          <div className="text-[10px] text-slate-400 mt-1 font-mono">Correlated campaigns</div>
         </div>
 
-        <div className="cyber-card p-4">
+        <div className="cyber-card p-4 relative overflow-hidden group hover:border-blue-500/60 transition">
           <div className="flex items-center justify-between text-slate-400 mb-2">
-            <span className="text-[11px] font-semibold uppercase tracking-wider">Unique IPs</span>
-            <Server className="w-4 h-4 text-blue-400" />
+            <span className="text-[10px] font-extrabold uppercase tracking-wider font-mono">Unique IPs</span>
+            <Server className="w-4 h-4 text-blue-400 group-hover:scale-110 transition-transform" />
           </div>
           <div className="text-2xl font-bold font-mono text-white">{kpis.unique_source_ips}</div>
-          <div className="text-[10px] text-slate-500 mt-1">Distinct hosts seen</div>
+          <div className="text-[10px] text-slate-400 mt-1 font-mono">Adversary sources</div>
         </div>
       </div>
 
-      {/* Row 1 Charts: Telemetry Activity Over Time + Attack Distribution */}
+      {/* Row 1 Charts: Event Volume Timeline + Attack Type Donut */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* Events & Alerts Over Time */}
-        <div className="cyber-card p-4 lg:col-span-2">
+        {/* Events Over Time Area Chart */}
+        <div className="cyber-card p-5 lg:col-span-2">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h2 className="text-xs font-bold uppercase tracking-wider text-slate-200">
-                Log Volume & Alert Temporal Velocity
+              <h2 className="text-xs font-bold uppercase tracking-wider text-slate-200 font-cyber">
+                Log Ingestion Volume &amp; Attack Temporal Velocity
               </h2>
-              <p className="text-[11px] text-slate-400">Chronological distribution of ingested events vs detected alerts</p>
+              <p className="text-[11px] text-slate-400">Chronological telemetry rate of ingested events vs active alerts</p>
             </div>
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-900 text-cyan-400 border border-slate-800">
+              Live Stream Wave
+            </span>
           </div>
+
           <div className="h-64 w-full">
             {data?.events_over_time?.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={data.events_over_time}>
                   <defs>
                     <linearGradient id="eventGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#06B6D4" stopOpacity={0.4}/>
+                      <stop offset="5%" stopColor="#06B6D4" stopOpacity={0.45}/>
                       <stop offset="95%" stopColor="#06B6D4" stopOpacity={0.0}/>
                     </linearGradient>
                   </defs>
                   <XAxis dataKey="timestamp" stroke="#64748B" fontSize={10} tickLine={false} />
                   <YAxis stroke="#64748B" fontSize={10} tickLine={false} />
                   <Tooltip
-                    contentStyle={{ backgroundColor: '#0F172A', borderColor: '#334155', borderRadius: '8px', fontSize: '11px' }}
+                    contentStyle={{ backgroundColor: '#0B0F19', borderColor: '#334155', borderRadius: '10px', fontSize: '11px', boxShadow: '0 8px 30px rgba(0,0,0,0.5)' }}
                   />
-                  <Area type="monotone" dataKey="count" name="Events" stroke="#06B6D4" strokeWidth={2} fillOpacity={1} fill="url(#eventGrad)" />
+                  <Area type="monotone" dataKey="count" name="Events" stroke="#06B6D4" strokeWidth={2.5} fillOpacity={1} fill="url(#eventGrad)" />
                 </AreaChart>
               </ResponsiveContainer>
             ) : (
-              <div className="h-full flex items-center justify-center text-xs text-slate-500">
-                Awaiting log telemetry data. Click "Run Security Simulation" or upload logs.
+              <div className="h-full flex items-center justify-center text-xs text-slate-500 font-mono">
+                Awaiting telemetry stream. Click "⚡ Run Simulation" or inject test logs.
               </div>
             )}
           </div>
         </div>
 
-        {/* Attack Type Distribution */}
-        <div className="cyber-card p-4">
+        {/* Attack Vector Distribution Donut */}
+        <div className="cyber-card p-5">
           <div className="mb-4">
-            <h2 className="text-xs font-bold uppercase tracking-wider text-slate-200">
-              Attack Type Breakdown
+            <h2 className="text-xs font-bold uppercase tracking-wider text-slate-200 font-cyber">
+              Attack Vector Classification
             </h2>
             <p className="text-[11px] text-slate-400">Classified multi-class attack categories</p>
           </div>
@@ -367,40 +449,40 @@ export function DashboardPage() {
                     nameKey="name"
                     cx="50%"
                     cy="50%"
-                    outerRadius={80}
-                    innerRadius={50}
-                    paddingAngle={3}
+                    outerRadius={85}
+                    innerRadius={55}
+                    paddingAngle={4}
                   >
                     {data.attack_type_distribution.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color || '#38BDF8'} />
                     ))}
                   </Pie>
-                  <Tooltip contentStyle={{ backgroundColor: '#0F172A', borderColor: '#334155', borderRadius: '8px', fontSize: '11px' }} />
-                  <Legend wrapperStyle={{ fontSize: '11px' }} />
+                  <Tooltip contentStyle={{ backgroundColor: '#0B0F19', borderColor: '#334155', borderRadius: '10px', fontSize: '11px' }} />
+                  <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '8px' }} />
                 </PieChart>
               </ResponsiveContainer>
             ) : (
-              <div className="text-xs text-slate-500 text-center">No classified attacks detected yet.</div>
+              <div className="text-xs text-slate-500 text-center font-mono">No classified attacks detected yet.</div>
             )}
           </div>
         </div>
       </div>
 
-      {/* Row 2 Charts: Severity + Anomaly Score + Top IPs/Users */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Severity Distribution */}
+      {/* Row 2 Intelligence Grid: Severity Spectrum + Anomaly Distribution + Top Threat IPs */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Severity Spectrum */}
         <div className="cyber-card p-4">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-slate-200 mb-1">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-slate-200 mb-1 font-cyber">
             Severity Spectrum
           </h2>
-          <p className="text-[11px] text-slate-400 mb-3">Alert distribution by impact tier</p>
+          <p className="text-[11px] text-slate-400 mb-3">Alert breakdown across threat tiers</p>
           <div className="h-48 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={data?.severity_distribution || []}>
                 <XAxis dataKey="name" stroke="#64748B" fontSize={9} tickLine={false} />
                 <YAxis stroke="#64748B" fontSize={9} tickLine={false} />
-                <Tooltip contentStyle={{ backgroundColor: '#0F172A', borderColor: '#334155', borderRadius: '8px', fontSize: '11px' }} />
-                <Bar dataKey="value" name="Alerts">
+                <Tooltip contentStyle={{ backgroundColor: '#0B0F19', borderColor: '#334155', borderRadius: '8px', fontSize: '11px' }} />
+                <Bar dataKey="value" name="Alerts" radius={[4, 4, 0, 0]}>
                   {(data?.severity_distribution || []).map((entry, index) => (
                     <Cell key={`sev-${index}`} fill={entry.color} />
                   ))}
@@ -412,17 +494,17 @@ export function DashboardPage() {
 
         {/* Anomaly Score Distribution (Isolation Forest) */}
         <div className="cyber-card p-4">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-slate-200 mb-1">
-            ML Anomaly Scores
+          <h2 className="text-xs font-bold uppercase tracking-wider text-slate-200 mb-1 font-cyber">
+            Isolation Forest Anomaly Scores
           </h2>
-          <p className="text-[11px] text-slate-400 mb-3">Isolation Forest outlier distribution</p>
+          <p className="text-[11px] text-slate-400 mb-3">Unsupervised outlier probability distribution</p>
           <div className="h-48 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={data?.anomaly_score_distribution || []}>
                 <XAxis dataKey="name" stroke="#64748B" fontSize={8} tickLine={false} />
                 <YAxis stroke="#64748B" fontSize={9} tickLine={false} />
-                <Tooltip contentStyle={{ backgroundColor: '#0F172A', borderColor: '#334155', borderRadius: '8px', fontSize: '11px' }} />
-                <Bar dataKey="value" name="Events">
+                <Tooltip contentStyle={{ backgroundColor: '#0B0F19', borderColor: '#334155', borderRadius: '8px', fontSize: '11px' }} />
+                <Bar dataKey="value" name="Events" radius={[4, 4, 0, 0]}>
                   {(data?.anomaly_score_distribution || []).map((entry, index) => (
                     <Cell key={`anom-${index}`} fill={entry.color} />
                   ))}
@@ -432,140 +514,140 @@ export function DashboardPage() {
           </div>
         </div>
 
-        {/* Top Suspicious IPs */}
+        {/* Top Adversary Sources */}
         <div className="cyber-card p-4">
           <div className="flex items-center justify-between mb-1">
-            <h2 className="text-xs font-bold uppercase tracking-wider text-slate-200">
-              Top Host Threat Sources
+            <h2 className="text-xs font-bold uppercase tracking-wider text-slate-200 font-cyber">
+              Top Threat Sources
             </h2>
-            <ExternalLink className="w-3.5 h-3.5 text-slate-400 cursor-pointer" onClick={() => navigate('/ip-investigation')} />
+            <button 
+              onClick={() => navigate('/ip-investigation')}
+              className="text-[11px] text-cyan-400 hover:text-cyan-300 font-mono flex items-center gap-1"
+            >
+              <span>Explore</span>
+              <ArrowRight className="w-3 h-3" />
+            </button>
           </div>
-          <p className="text-[11px] text-slate-400 mb-3">Frequent offensive source IPs</p>
+          <p className="text-[11px] text-slate-400 mb-3">Offensive source IPs ranked by event count</p>
           <div className="space-y-2">
             {data?.top_suspicious_ips?.length > 0 ? (
-              data.top_suspicious_ips.map((ip, i) => (
+              data.top_suspicious_ips.slice(0, 4).map((ip, i) => (
                 <div
                   key={i}
                   onClick={() => navigate(`/ip-investigation?ip=${ip.name}`)}
-                  className="flex items-center justify-between p-2 rounded-lg bg-slate-900/80 border border-slate-800/80 hover:border-cyan-500/50 cursor-pointer transition-colors"
+                  className="flex items-center justify-between p-2.5 rounded-lg bg-slate-950/70 border border-slate-800 hover:border-cyan-500/50 cursor-pointer transition"
                 >
-                  <span className="font-mono text-xs text-rose-400">{ip.name}</span>
-                  <span className="text-[11px] font-bold text-slate-300">{ip.value} alerts</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-mono text-slate-500 font-bold">#{i + 1}</span>
+                    <span className="font-mono text-xs font-semibold text-cyan-300">{ip.name}</span>
+                  </div>
+                  <span className="px-2 py-0.5 rounded text-[10px] font-bold font-mono bg-rose-500/15 text-rose-300 border border-rose-500/30">
+                    {ip.value} events
+                  </span>
                 </div>
               ))
             ) : (
-              <div className="text-xs text-slate-500 py-6 text-center">No host anomalies detected.</div>
-            )}
-          </div>
-        </div>
-
-        {/* Top Targeted Users */}
-        <div className="cyber-card p-4">
-          <div className="flex items-center justify-between mb-1">
-            <h2 className="text-xs font-bold uppercase tracking-wider text-slate-200">
-              Targeted Entities
-            </h2>
-            <ExternalLink className="w-3.5 h-3.5 text-slate-400 cursor-pointer" onClick={() => navigate('/users')} />
-          </div>
-          <p className="text-[11px] text-slate-400 mb-3">Targeted accounts &amp; resources</p>
-          <div className="space-y-2">
-            {data?.top_targeted_users?.length > 0 ? (
-              data.top_targeted_users.map((u, i) => (
-                <div
-                  key={i}
-                  onClick={() => navigate(`/users?user=${u.name}`)}
-                  className="flex items-center justify-between p-2 rounded-lg bg-slate-900/80 border border-slate-800/80 hover:border-cyan-500/50 cursor-pointer transition-colors"
-                >
-                  <span className="font-mono text-xs text-cyan-400">{u.name}</span>
-                  <span className="text-[11px] font-bold text-slate-300">{u.value} alerts</span>
-                </div>
-              ))
-            ) : (
-              <div className="text-xs text-slate-500 py-6 text-center">No accounts targeted yet.</div>
+              <div className="text-xs text-slate-500 py-6 text-center font-mono">No threat IPs recorded yet.</div>
             )}
           </div>
         </div>
       </div>
 
-      {/* Row 3: Live Alert Feed (Section 12) */}
+      {/* Row 3: Live Alert Triage Feed Table */}
       <div className="cyber-card p-5">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <span className="relative flex h-2.5 w-2.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-500"></span>
-            </span>
-            <h2 className="text-xs font-bold uppercase tracking-wider text-slate-200">
-              Live Threat Interception Feed
-            </h2>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <h2 className="text-sm font-bold uppercase tracking-wider text-white font-cyber">
+                Live Alert Stream &amp; Operational Triage Queue
+              </h2>
+              <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40 animate-pulse">
+                REALTIME
+              </span>
+            </div>
+            <p className="text-xs text-slate-400">Interceptions streamed directly from rule and ML inference pipelines</p>
           </div>
+
           <button
             onClick={() => navigate('/alerts')}
-            className="text-xs text-cyan-400 hover:text-cyan-300 flex items-center gap-1 font-semibold"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-cyan-400 hover:text-cyan-300 bg-cyan-950/40 hover:bg-cyan-950/70 border border-cyan-800/60 transition"
           >
             <span>View All Alerts</span>
-            <ArrowUpRight className="w-3.5 h-3.5" />
+            <ArrowRight className="w-3.5 h-3.5" />
           </button>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
+        <div className="overflow-x-auto rounded-xl border border-slate-800/80">
+          <table className="soc-table">
             <thead>
-              <tr className="border-b border-slate-800 text-slate-400 font-semibold uppercase text-[10px]">
-                <th className="py-2.5 px-3">Timestamp</th>
-                <th className="py-2.5 px-3">Severity</th>
-                <th className="py-2.5 px-3">Attack Classification</th>
-                <th className="py-2.5 px-3">Source Host</th>
-                <th className="py-2.5 px-3">Target Entity</th>
-                <th className="py-2.5 px-3">Risk Score</th>
-                <th className="py-2.5 px-3">Status</th>
-                <th className="py-2.5 px-3 text-right">Action</th>
+              <tr>
+                <th>Timestamp</th>
+                <th>Severity</th>
+                <th>Attack Vector</th>
+                <th>Source IP</th>
+                <th>Target User</th>
+                <th>Risk Score</th>
+                <th>Status</th>
+                <th>Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60">
+            <tbody>
               {data?.recent_alerts?.length > 0 ? (
-                data.recent_alerts.map((alt) => (
-                  <tr
-                    key={alt.id}
-                    onClick={() => navigate(`/alerts/${alt.id}`)}
-                    className="hover:bg-slate-800/40 cursor-pointer transition-colors group"
-                  >
-                    <td className="py-3 px-3 font-mono text-[11px] text-slate-400">
-                      {new Date(alt.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                data.recent_alerts.slice(0, 8).map((alert) => (
+                  <tr key={alert.id} className="hover:bg-slate-900/50 transition">
+                    <td className="font-mono text-xs text-slate-400 whitespace-nowrap">
+                      {new Date(alert.timestamp).toLocaleTimeString()}
                     </td>
-                    <td className="py-3 px-3">
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${severityColors[alt.severity]}`}>
-                        {alt.severity}
+                    <td>
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold tracking-wide border ${severityBadges[alert.severity] || severityBadges.INFO}`}>
+                        {alert.severity}
                       </span>
                     </td>
-                    <td className="py-3 px-3 font-semibold text-slate-200">
-                      {alt.attack_type}
+                    <td className="font-semibold text-xs text-slate-200">
+                      {alert.attack_type}
                     </td>
-                    <td className="py-3 px-3 font-mono text-cyan-400">
-                      {alt.source_ip || '-'}
+                    <td className="font-mono text-xs text-cyan-400">
+                      {alert.source_ip || 'Internal'}
                     </td>
-                    <td className="py-3 px-3 text-slate-300">
-                      {alt.username || '-'}
+                    <td className="font-mono text-xs text-slate-300">
+                      {alert.username || 'System'}
                     </td>
-                    <td className="py-3 px-3 font-mono font-bold text-amber-400">
-                      {alt.risk_score?.toFixed(0)} / 100
+                    <td>
+                      <div className="flex items-center gap-2">
+                        <div className="w-16 h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full rounded-full ${
+                              alert.risk_score >= 80 ? 'bg-rose-500' :
+                              alert.risk_score >= 60 ? 'bg-amber-500' :
+                              alert.risk_score >= 30 ? 'bg-yellow-500' : 'bg-cyan-500'
+                            }`}
+                            style={{ width: `${Math.min(alert.risk_score, 100)}%` }}
+                          />
+                        </div>
+                        <span className="font-mono text-xs font-bold text-slate-200">
+                          {alert.risk_score?.toFixed(0)}
+                        </span>
+                      </div>
                     </td>
-                    <td className="py-3 px-3">
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-medium border ${statusColors[alt.status] || 'border-slate-700'}`}>
-                        {alt.status}
+                    <td>
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${statusBadges[alert.status] || statusBadges.NEW}`}>
+                        {alert.status}
                       </span>
                     </td>
-                    <td className="py-3 px-3 text-right">
-                      <span className="text-cyan-400 group-hover:text-cyan-300 font-semibold text-xs inline-flex items-center gap-1">
-                        Investigate <ArrowUpRight className="w-3.5 h-3.5" />
-                      </span>
+                    <td>
+                      <button
+                        onClick={() => navigate(`/alerts/${alert.id}`)}
+                        className="px-2.5 py-1 rounded bg-slate-800/80 hover:bg-cyan-600 hover:text-white text-cyan-300 text-xs font-semibold border border-slate-700/80 hover:border-cyan-500 transition"
+                      >
+                        Investigate
+                      </button>
                     </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan="8" className="py-8 text-center text-slate-500 text-xs">
-                    No security alerts recorded. Ingest logs or trigger a security simulation to begin monitoring.
+                  <td colSpan="8" className="py-8 text-center text-xs text-slate-500 font-mono">
+                    No active alerts in operational queue. Trigger the simulation or send test attacks.
                   </td>
                 </tr>
               )}
