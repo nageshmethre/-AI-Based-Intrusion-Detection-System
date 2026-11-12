@@ -21,7 +21,10 @@ dist-ssr/
 .env
 .env.local
 
-# Databases & logs
+# Binaries & Tunnel tools
+*.exe
+cloudflared.exe
+
 *.log
 logs/server_*.log
 soc_platform.db
