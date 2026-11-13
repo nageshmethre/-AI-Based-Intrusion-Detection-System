@@ -87,6 +87,12 @@ export const api = {
     return res.json();
   },
 
+  async getSampleDatasets() {
+    const res = await fetch(`${API_BASE}/events/samples`);
+    if (!res.ok) throw new Error('Failed to load sample datasets');
+    return res.json();
+  },
+
   // Alerts & AI Explanation
   async getAlerts(params = {}) {
     const query = new URLSearchParams(params).toString();
