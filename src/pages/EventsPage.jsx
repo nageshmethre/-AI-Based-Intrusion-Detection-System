@@ -116,14 +116,14 @@ export function EventsPage() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setIsUploadModalOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-cyan-600 hover:bg-cyan-500 text-white shadow-lg shadow-cyan-950 transition-colors"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold bg-yellow-400 hover:bg-yellow-300 text-black shadow-lg shadow-yellow-950/40 transition active:scale-95"
           >
             <Upload className="w-3.5 h-3.5" />
             <span>Ingest Logs / Upload</span>
           </button>
           <button
             onClick={fetchEvents}
-            className="p-1.5 rounded-lg text-xs bg-slate-900 border border-slate-800 text-slate-300 hover:bg-slate-800"
+            className="p-1.5 rounded-lg text-xs bg-neutral-900 border border-neutral-800 text-neutral-300 hover:text-yellow-400 hover:border-yellow-500/40 transition"
             title="Refresh"
           >
             <RefreshCw className="w-4 h-4" />
@@ -135,13 +135,13 @@ export function EventsPage() {
       <div className="cyber-card p-3">
         <form onSubmit={handleSearchSubmit} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-2">
           <div className="relative lg:col-span-2">
-            <Search className="w-3.5 h-3.5 text-slate-500 absolute left-3 top-2.5" />
+            <Search className="w-3.5 h-3.5 text-neutral-500 absolute left-3 top-2.5" />
             <input
               type="text"
               placeholder="Search message, raw log, resource..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-800 rounded-lg pl-8 pr-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500"
+              className="w-full bg-neutral-950 border border-neutral-800 rounded-lg pl-8 pr-3 py-1.5 text-xs text-neutral-200 placeholder-neutral-500 focus:outline-none focus:border-yellow-500 transition"
             />
           </div>
 
@@ -151,7 +151,7 @@ export function EventsPage() {
               placeholder="Source IP (e.g. 192.168)"
               value={sourceIp}
               onChange={(e) => setSourceIp(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500"
+              className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-1.5 text-xs text-neutral-200 placeholder-neutral-500 focus:outline-none focus:border-yellow-500 transition"
             />
           </div>
 
@@ -161,7 +161,7 @@ export function EventsPage() {
               placeholder="Username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500"
+              className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-1.5 text-xs text-neutral-200 placeholder-neutral-500 focus:outline-none focus:border-yellow-500 transition"
             />
           </div>
 
@@ -169,7 +169,7 @@ export function EventsPage() {
             <select
               value={severity}
               onChange={(e) => setSeverity(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-cyan-500"
+              className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-2.5 py-1.5 text-xs text-neutral-200 focus:outline-none focus:border-yellow-500 transition"
             >
               <option value="">All Severities</option>
               <option value="CRITICAL">Critical</option>
@@ -184,7 +184,7 @@ export function EventsPage() {
             <select
               value={eventType}
               onChange={(e) => setEventType(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-cyan-500"
+              className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-2 py-1.5 text-xs text-neutral-200 focus:outline-none focus:border-yellow-500 transition"
             >
               <option value="">All Types</option>
               <option value="AUTH">AUTH</option>
@@ -220,11 +220,11 @@ export function EventsPage() {
                 <th className="py-2.5 px-3 text-right">Inspect</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60 font-mono text-[11px]">
+            <tbody className="divide-y divide-neutral-800/60 font-mono text-[11px]">
               {loading ? (
                 <tr>
-                  <td colSpan="9" className="py-12 text-center text-slate-500">
-                    <RefreshCw className="w-5 h-5 text-cyan-400 animate-spin mx-auto mb-2" />
+                  <td colSpan="9" className="py-12 text-center text-neutral-500">
+                    <RefreshCw className="w-5 h-5 text-yellow-400 animate-spin mx-auto mb-2" />
                     <span>Querying normalized events...</span>
                   </td>
                 </tr>
@@ -233,32 +233,32 @@ export function EventsPage() {
                   <tr
                     key={e.id}
                     onClick={() => setSelectedEvent(e)}
-                    className="hover:bg-slate-800/40 cursor-pointer transition-colors"
+                    className="hover:bg-neutral-900/60 cursor-pointer transition-colors"
                   >
-                    <td className="py-2 px-3 text-slate-400">
+                    <td className="py-2 px-3 text-neutral-400">
                       {new Date(e.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                     </td>
                     <td className="py-2 px-3 font-sans">
-                      <span className="px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 text-[10px] font-bold">
+                      <span className="px-1.5 py-0.5 rounded bg-neutral-800 text-neutral-300 text-[10px] font-bold">
                         {e.event_type}
                       </span>
                     </td>
-                    <td className="py-2 px-3 text-slate-300">{e.action || '-'}</td>
+                    <td className="py-2 px-3 text-neutral-300">{e.action || '-'}</td>
                     <td className="py-2 px-3">
-                      <span className={e.status === 'FAILURE' ? 'text-rose-400' : (e.status === 'SUCCESS' ? 'text-emerald-400' : 'text-slate-400')}>
+                      <span className={e.status === 'FAILURE' ? 'text-rose-400' : (e.status === 'SUCCESS' ? 'text-emerald-400' : 'text-neutral-400')}>
                         {e.status || '-'}
                       </span>
                     </td>
-                    <td className="py-2 px-3 text-cyan-400">{e.source_ip || '-'}</td>
-                    <td className="py-2 px-3 font-sans text-slate-300 truncate max-w-xs">
+                    <td className="py-2 px-3 text-yellow-400 font-semibold">{e.source_ip || '-'}</td>
+                    <td className="py-2 px-3 font-sans text-neutral-300 truncate max-w-xs">
                       {e.username || e.resource || '-'}
                     </td>
                     <td className="py-2 px-3 font-sans">
                       <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
                         e.severity === 'CRITICAL' ? 'bg-rose-500/20 text-rose-400' :
-                        e.severity === 'HIGH' ? 'bg-orange-500/20 text-orange-400' :
-                        e.severity === 'MEDIUM' ? 'bg-amber-500/20 text-amber-400' :
-                        'bg-slate-800 text-slate-400'
+                        e.severity === 'HIGH' ? 'bg-amber-500/20 text-amber-400' :
+                        e.severity === 'MEDIUM' ? 'bg-yellow-500/20 text-yellow-400' :
+                        'bg-neutral-800 text-neutral-400'
                       }`}>
                         {e.severity}
                       </span>
@@ -267,7 +267,7 @@ export function EventsPage() {
                       {e.risk_score?.toFixed(0)}
                     </td>
                     <td className="py-2 px-3 text-right">
-                      <button className="text-slate-400 hover:text-cyan-400">
+                      <button className="text-neutral-400 hover:text-yellow-400">
                         <Eye className="w-3.5 h-3.5" />
                       </button>
                     </td>
@@ -377,23 +377,23 @@ export function EventsPage() {
       {isUploadModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
           <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-5 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+            <div className="flex items-center justify-between border-b border-neutral-800 pb-3">
               <div className="flex items-center gap-2">
-                <Upload className="w-5 h-5 text-cyan-400" />
+                <Upload className="w-5 h-5 text-yellow-400" />
                 <h3 className="text-sm font-bold text-white">Log Telemetry Ingestion Engine</h3>
               </div>
-              <button onClick={() => setIsUploadModalOpen(false)} className="text-slate-400 hover:text-white">
+              <button onClick={() => setIsUploadModalOpen(false)} className="text-neutral-400 hover:text-white">
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             {/* Ingestion Mode Toggle */}
-            <div className="flex rounded-lg bg-slate-950 p-1 border border-slate-800 text-xs">
+            <div className="flex rounded-lg bg-neutral-950 p-1 border border-neutral-800 text-xs">
               <button
                 type="button"
                 onClick={() => setUploadMode('file')}
-                className={`flex-1 py-1.5 rounded-md font-semibold transition-colors ${
-                  uploadMode === 'file' ? 'bg-cyan-600 text-white' : 'text-slate-400 hover:text-slate-200'
+                className={`flex-1 py-1.5 rounded-md font-bold transition-colors ${
+                  uploadMode === 'file' ? 'bg-yellow-400 text-black' : 'text-neutral-400 hover:text-neutral-200'
                 }`}
               >
                 File Upload (.log, .txt, .csv, .json)
@@ -401,8 +401,8 @@ export function EventsPage() {
               <button
                 type="button"
                 onClick={() => setUploadMode('text')}
-                className={`flex-1 py-1.5 rounded-md font-semibold transition-colors ${
-                  uploadMode === 'text' ? 'bg-cyan-600 text-white' : 'text-slate-400 hover:text-slate-200'
+                className={`flex-1 py-1.5 rounded-md font-bold transition-colors ${
+                  uploadMode === 'text' ? 'bg-yellow-400 text-black' : 'text-neutral-400 hover:text-neutral-200'
                 }`}
               >
                 Direct Raw Text Stream
@@ -422,24 +422,24 @@ export function EventsPage() {
 
             <form onSubmit={handleUploadSubmit} className="space-y-4">
               {uploadMode === 'file' ? (
-                <div className="border-2 border-dashed border-slate-800 rounded-xl p-6 text-center hover:border-cyan-500/50 transition-colors">
-                  <FileText className="w-8 h-8 text-cyan-400 mx-auto mb-2" />
-                  <p className="text-xs text-slate-300 font-semibold mb-1">
+                <div className="border-2 border-dashed border-neutral-800 rounded-xl p-6 text-center hover:border-yellow-500/50 transition-colors">
+                  <FileText className="w-8 h-8 text-yellow-400 mx-auto mb-2" />
+                  <p className="text-xs text-neutral-300 font-semibold mb-1">
                     Select or drag-and-drop security log file
                   </p>
-                  <p className="text-[10px] text-slate-500 mb-3">
+                  <p className="text-[10px] text-neutral-500 mb-3">
                     Supported: Linux Auth, Apache/Nginx, Windows Events, CSV, JSON
                   </p>
                   <input
                     type="file"
                     accept=".log,.txt,.csv,.json"
                     onChange={(e) => setUploadFile(e.target.files[0])}
-                    className="text-xs text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-slate-800 file:text-slate-200 hover:file:bg-slate-700 cursor-pointer"
+                    className="text-xs text-neutral-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-neutral-800 file:text-neutral-200 hover:file:bg-neutral-700 cursor-pointer"
                   />
                 </div>
               ) : (
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                  <label className="block text-xs font-semibold text-neutral-300 mb-1.5">
                     Paste Raw Log Lines
                   </label>
                   <textarea
@@ -447,7 +447,7 @@ export function EventsPage() {
                     value={rawText}
                     onChange={(e) => setRawText(e.target.value)}
                     placeholder="Oct 10 14:22:01 server sshd[12345]: Failed password for root from 192.168.1.100 port 44212 ssh2&#10;192.168.1.50 - - [10/Oct/2026:14:00:00 +0000] &quot;GET /admin HTTP/1.1&quot; 401 256"
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs font-mono text-slate-200 placeholder-slate-600 focus:outline-none focus:border-cyan-500"
+                    className="w-full bg-neutral-950 border border-neutral-800 rounded-xl p-3 text-xs font-mono text-neutral-200 placeholder-neutral-600 focus:outline-none focus:border-yellow-500"
                   />
                 </div>
               )}
@@ -456,14 +456,14 @@ export function EventsPage() {
                 <button
                   type="button"
                   onClick={() => setIsUploadModalOpen(false)}
-                  className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300"
+                  className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-neutral-800 hover:bg-neutral-700 text-neutral-300"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={uploadLoading}
-                  className="px-4 py-1.5 rounded-lg text-xs font-semibold bg-cyan-600 hover:bg-cyan-500 text-white shadow-md disabled:opacity-50"
+                  className="px-4 py-1.5 rounded-lg text-xs font-bold bg-yellow-400 hover:bg-yellow-300 text-black shadow-md shadow-yellow-950/40 disabled:opacity-50 transition active:scale-95"
                 >
                   {uploadLoading ? 'Normalizing & Scoring...' : 'Ingest & Analyze'}
                 </button>

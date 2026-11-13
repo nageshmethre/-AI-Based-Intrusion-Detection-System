@@ -13,9 +13,7 @@ import {
   FileDown,
   ChevronLeft,
   ChevronRight,
-  ShieldCheck,
-  Radio,
-  Cpu
+  ShieldCheck
 } from 'lucide-react';
 
 export function Sidebar({ alertCount = 0 }) {
@@ -51,21 +49,21 @@ export function Sidebar({ alertCount = 0 }) {
 
   return (
     <aside
-      className={`shrink-0 bg-[#070B14] border-r border-slate-800/90 h-full overflow-y-auto p-2.5 flex flex-col justify-between transition-all duration-300 ${
+      className={`shrink-0 bg-[#0a0a0a]/95 backdrop-blur-md border-r border-neutral-800/80 h-full overflow-y-auto p-2.5 flex flex-col justify-between transition-all duration-300 ${
         collapsed ? 'w-16' : 'w-64'
       }`}
     >
       <div>
         {/* Toggle Collapse Button */}
-        <div className={`flex items-center ${collapsed ? 'justify-center' : 'justify-between px-2'} mb-2 text-slate-500`}>
+        <div className={`flex items-center ${collapsed ? 'justify-center' : 'justify-between px-2'} mb-2 text-neutral-500`}>
           {!collapsed && (
-            <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 font-mono">
+            <span className="text-[10px] font-extrabold uppercase tracking-widest text-neutral-400 font-mono">
               Navigation Console
             </span>
           )}
           <button
             onClick={() => setCollapsed(!collapsed)}
-            className="p-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-slate-200 transition"
+            className="p-1 rounded-lg hover:bg-neutral-800 text-neutral-400 hover:text-neutral-200 transition"
             title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
             {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
@@ -77,7 +75,7 @@ export function Sidebar({ alertCount = 0 }) {
           {sections.map((section, sIdx) => (
             <div key={sIdx} className="space-y-1">
               {!collapsed && (
-                <div className="px-3 py-1 text-[10px] font-extrabold uppercase tracking-wider text-slate-500 font-mono">
+                <div className="px-3 py-1 text-[10px] font-extrabold uppercase tracking-wider text-neutral-500 font-mono">
                   {section.title}
                 </div>
               )}
@@ -88,8 +86,8 @@ export function Sidebar({ alertCount = 0 }) {
                   className={({ isActive }) =>
                     `flex items-center ${collapsed ? 'justify-center' : 'justify-between'} px-3 py-2 rounded-xl text-xs font-medium transition-all group ${
                       isActive
-                        ? 'bg-gradient-to-r from-cyan-500/15 to-blue-500/10 text-cyan-300 border-l-2 border-l-cyan-400 border border-cyan-500/30 shadow-md shadow-cyan-950/40 font-semibold'
-                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/70 border border-transparent'
+                        ? 'bg-gradient-to-r from-yellow-500/15 via-amber-500/10 to-transparent text-yellow-400 border-l-2 border-l-yellow-400 border border-yellow-500/30 shadow-md shadow-yellow-950/20 font-semibold'
+                        : 'text-neutral-400 hover:text-neutral-200 hover:bg-neutral-900/80 border border-transparent'
                     }`
                   }
                   title={collapsed ? item.label : undefined}
@@ -112,38 +110,38 @@ export function Sidebar({ alertCount = 0 }) {
 
       {/* Bottom Telemetry HUD */}
       {!collapsed ? (
-        <div className="mt-4 p-3 rounded-xl bg-slate-950/80 border border-slate-800/90 text-xs space-y-2 shadow-inner">
+        <div className="mt-4 p-3 rounded-xl bg-neutral-900/80 border border-neutral-800/90 text-xs space-y-2 shadow-inner">
           <div className="flex items-center justify-between">
-            <span className="flex items-center gap-1.5 text-slate-300 font-bold text-[11px]">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+            <span className="flex items-center gap-1.5 text-neutral-300 font-bold text-[11px]">
+              <ShieldCheck className="w-3.5 h-3.5 text-yellow-400" />
               <span>Host Defense</span>
             </span>
-            <span className="px-1.5 py-0.5 rounded text-[9px] font-bold font-mono bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 uppercase">
+            <span className="px-1.5 py-0.5 rounded text-[9px] font-bold font-mono bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 uppercase">
               24x7 Active
             </span>
           </div>
-          <div className="space-y-1 text-[10px] font-mono text-slate-400">
-            <div className="flex items-center justify-between text-slate-400">
+          <div className="space-y-1 text-[10px] font-mono text-neutral-400">
+            <div className="flex items-center justify-between text-neutral-400">
               <span>Classifier:</span>
-              <span className="text-cyan-400 font-bold">RF + DT + GB</span>
+              <span className="text-yellow-400 font-bold">RF + DT + GB</span>
             </div>
-            <div className="flex items-center justify-between text-slate-400">
+            <div className="flex items-center justify-between text-neutral-400">
               <span>Anomaly Engine:</span>
-              <span className="text-emerald-400 font-bold">Isolation Forest</span>
+              <span className="text-amber-400 font-bold">Isolation Forest</span>
             </div>
-            <div className="flex items-center justify-between text-slate-400">
+            <div className="flex items-center justify-between text-neutral-400">
               <span>Syslog UDP:</span>
-              <span className="text-amber-400 font-bold">Port 1514</span>
+              <span className="text-yellow-400 font-bold">Port 1514</span>
             </div>
           </div>
-          <div className="pt-1.5 border-t border-slate-800/80 flex items-center justify-between text-[9px] text-slate-400">
+          <div className="pt-1.5 border-t border-neutral-800/80 flex items-center justify-between text-[9px] text-neutral-400">
             <span>CIC-IDS2017 Ready</span>
-            <span className="text-cyan-400">v1.0 Pro</span>
+            <span className="text-yellow-400 font-semibold">v1.0 Pro</span>
           </div>
         </div>
       ) : (
         <div className="flex justify-center p-2">
-          <ShieldCheck className="w-5 h-5 text-emerald-400 animate-pulse" title="Host Defense: 24x7 Active" />
+          <ShieldCheck className="w-5 h-5 text-yellow-400 animate-pulse" title="Host Defense: 24x7 Active" />
         </div>
       )}
     </aside>

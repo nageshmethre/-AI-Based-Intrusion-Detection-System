@@ -54,16 +54,19 @@ export function RulesPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-white font-['Space_Grotesk']">
-            Detection Rules Configuration
+          <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
+            <span>Detection Rules Configuration</span>
+            <span className="text-xs px-2 py-0.5 rounded bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 font-mono">
+              8 Heuristics
+            </span>
           </h1>
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-neutral-400">
             Configure transparent deterministic security rules, sliding time windows, and threshold limits
           </p>
         </div>
         <button
           onClick={fetchRules}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-900 border border-slate-800 text-slate-300 hover:bg-slate-800"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-neutral-900 border border-neutral-800 text-neutral-300 hover:text-yellow-400 hover:border-yellow-500/40 transition"
         >
           <RefreshCw className="w-3.5 h-3.5" />
           <span>Reload Rules</span>
@@ -71,8 +74,8 @@ export function RulesPage() {
       </div>
 
       {message && (
-        <div className={`p-3 rounded-xl text-xs flex items-center gap-2 border ${
-          message.type === 'success' ? 'bg-emerald-950/60 border-emerald-800 text-emerald-300' : 'bg-rose-950/60 border-rose-800 text-rose-300'
+        <div className={`p-3 rounded-xl text-xs flex items-center gap-2 border backdrop-blur-md ${
+          message.type === 'success' ? 'bg-emerald-950/70 border-emerald-700 text-emerald-300' : 'bg-rose-950/70 border-rose-700 text-rose-300'
         }`}>
           {message.type === 'success' ? <CheckCircle2 className="w-4 h-4 text-emerald-400" /> : <AlertTriangle className="w-4 h-4 text-rose-400" />}
           <span>{message.text}</span>
@@ -86,11 +89,11 @@ export function RulesPage() {
             <div className="flex items-start justify-between">
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="font-mono text-xs font-bold text-cyan-400">{rule.rule_code}</span>
+                  <span className="font-mono text-xs font-bold text-yellow-400">{rule.rule_code}</span>
                   <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${
                     rule.severity === 'CRITICAL' ? 'bg-rose-500/20 text-rose-300 border-rose-500/40' :
-                    rule.severity === 'HIGH' ? 'bg-orange-500/20 text-orange-300 border-orange-500/40' :
-                    'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                    rule.severity === 'HIGH' ? 'bg-amber-500/20 text-amber-300 border-amber-500/40' :
+                    'bg-yellow-500/20 text-yellow-300 border-yellow-500/40'
                   }`}>
                     {rule.severity}
                   </span>
@@ -106,35 +109,35 @@ export function RulesPage() {
                   onChange={(e) => handleRuleChange(rule.id, 'is_enabled', e.target.checked)}
                   className="sr-only peer"
                 />
-                <div className="w-9 h-5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-cyan-500"></div>
+                <div className="w-9 h-5 bg-neutral-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-neutral-900 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-neutral-600 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-yellow-400"></div>
               </label>
             </div>
 
-            <p className="text-xs text-slate-400 leading-relaxed">{rule.description}</p>
+            <p className="text-xs text-neutral-400 leading-relaxed">{rule.description}</p>
 
             {/* Inputs: Threshold & Window */}
-            <div className="grid grid-cols-2 gap-3 pt-3 border-t border-slate-800/80 text-xs">
+            <div className="grid grid-cols-2 gap-3 pt-3 border-t border-neutral-800/80 text-xs">
               <div>
-                <label className="block text-[10px] uppercase font-bold text-slate-400 mb-1">
+                <label className="block text-[10px] uppercase font-bold text-neutral-400 mb-1">
                   Threshold Value
                 </label>
                 <input
                   type="number"
                   value={rule.threshold_value}
                   onChange={(e) => handleRuleChange(rule.id, 'threshold_value', e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 font-mono text-cyan-400 text-xs focus:outline-none focus:border-cyan-500"
+                  className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-2.5 py-1.5 font-mono text-yellow-400 text-xs focus:outline-none focus:border-yellow-500 transition"
                 />
               </div>
 
               <div>
-                <label className="block text-[10px] uppercase font-bold text-slate-400 mb-1">
+                <label className="block text-[10px] uppercase font-bold text-neutral-400 mb-1">
                   Window (Minutes)
                 </label>
                 <input
                   type="number"
                   value={rule.time_window_minutes}
                   onChange={(e) => handleRuleChange(rule.id, 'time_window_minutes', e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 font-mono text-slate-200 text-xs focus:outline-none focus:border-cyan-500"
+                  className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-2.5 py-1.5 font-mono text-neutral-200 text-xs focus:outline-none focus:border-yellow-500 transition"
                 />
               </div>
             </div>
@@ -144,7 +147,7 @@ export function RulesPage() {
               <select
                 value={rule.severity}
                 onChange={(e) => handleRuleChange(rule.id, 'severity', e.target.value)}
-                className="bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1 text-xs text-slate-300 focus:outline-none focus:border-cyan-500"
+                className="bg-neutral-950 border border-neutral-800 rounded-lg px-2.5 py-1 text-xs text-neutral-300 focus:outline-none focus:border-yellow-500"
               >
                 <option value="CRITICAL">CRITICAL</option>
                 <option value="HIGH">HIGH</option>
@@ -155,7 +158,7 @@ export function RulesPage() {
               <button
                 onClick={() => handleSaveRule(rule)}
                 disabled={savingId === rule.id}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-cyan-600 hover:bg-cyan-500 text-white shadow-sm disabled:opacity-50"
+                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold bg-yellow-400 hover:bg-yellow-300 text-black shadow-md shadow-yellow-950/40 disabled:opacity-50 transition active:scale-95"
               >
                 <Save className="w-3.5 h-3.5" />
                 <span>{savingId === rule.id ? 'Saving...' : 'Save Settings'}</span>
